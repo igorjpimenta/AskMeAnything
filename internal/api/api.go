@@ -1,9 +1,11 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/igorjpimenta/AskMeAnything/internal/store/pgstore"
@@ -16,9 +18,11 @@ import (
 )
 
 type apiHandler struct {
-	q        *pgstore.Queries
-	r        *chi.Mux
-	upgrader websocket.Upgrader
+	q           *pgstore.Queries
+	r           *chi.Mux
+	upgrader    websocket.Upgrader
+	subscribers map[string]map[*websocket.Conn]context.CancelFunc
+	mu          *sync.Mutex
 }
 
 func (h apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -27,8 +31,10 @@ func (h apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func NewHandler(q *pgstore.Queries) http.Handler {
 	a := apiHandler{
-		q:        q,
-		upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
+		q:           q,
+		upgrader:    websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
+		subscribers: make(map[string]map[*websocket.Conn]context.CancelFunc),
+		mu:          &sync.Mutex{},
 	}
 
 	r := chi.NewRouter()
@@ -95,7 +101,24 @@ func (h apiHandler) handleSubscribe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer c.Close()
+
+	ctx, cancel := context.WithCancel(r.Context())
+
+	h.mu.Lock()
+	if _, ok := h.subscribers[rawRoomID]; !ok {
+		h.subscribers[rawRoomID] = make(map[*websocket.Conn]context.CancelFunc)
+	}
+	slog.Info("new client connected", "room_id", rawRoomID, "client_ip", r.RemoteAddr)
+	h.subscribers[rawRoomID][c] = cancel
+	h.mu.Unlock()
+
+	<-ctx.Done()
+
+	h.mu.Lock()
+	delete(h.subscribers[rawRoomID], c)
+	h.mu.Unlock()
 }
+
 func (h apiHandler) handleCreateRoom(w http.ResponseWriter, r *http.Request)             {}
 func (h apiHandler) handleGetRooms(w http.ResponseWriter, r *http.Request)               {}
 func (h apiHandler) handleCreateRoomMessage(w http.ResponseWriter, r *http.Request)      {}
