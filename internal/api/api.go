@@ -75,7 +75,12 @@ const (
 	MessageKindMessageCreated           = "message_created"
 	MessageKindMessageReactionIncreased = "message_reaction_increased"
 	MessageKindMessageReactionDecreased = "message_reaction_decreased"
+	MessageKindMessageAnswered          = "message_answered"
 )
+
+type MessageMessageAnswered struct {
+	ID string `json:"id"`
+}
 
 type MessageMessageReactionDecreased struct {
 	ID    string `json:"id"`
@@ -289,4 +294,28 @@ func (h apiHandler) handleRemoveReactFromMessage(w http.ResponseWriter, r *http.
 	})
 }
 
-func (h apiHandler) handleMaskMessageAsAnswered(w http.ResponseWriter, r *http.Request) {}
+func (h apiHandler) handleMaskMessageAsAnswered(w http.ResponseWriter, r *http.Request) {
+	message, roomID, ok := h.validateMessageRoom(w, r)
+	if !ok {
+		return
+	}
+
+	if message.Answered {
+		h.handleError(w, "message already answered", nil, http.StatusBadRequest)
+		return
+	}
+
+	err := h.q.MarkMessageAnswered(r.Context(), message.ID)
+	if err != nil {
+		h.handleError(w, "failed to mark message answered", err, http.StatusInternalServerError)
+		return
+	}
+
+	go h.notifyClients(Message{
+		Kind:   MessageKindMessageAnswered,
+		RoomID: roomID.String(),
+		Value: MessageMessageAnswered{
+			ID: message.ID.String(),
+		},
+	})
+}
