@@ -87,7 +87,7 @@ type Message struct {
 }
 
 func (h apiHandler) handleSubscribe(w http.ResponseWriter, r *http.Request) {
-	roomID, ok := h.getRoom(w, r)
+	_, roomID, ok := h.getRoom(w, r)
 	if !ok {
 		return
 	}
@@ -159,7 +159,7 @@ func (h apiHandler) handleGetRooms(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h apiHandler) handleCreateRoomMessage(w http.ResponseWriter, r *http.Request) {
-	roomID, ok := h.getRoom(w, r)
+	_, roomID, ok := h.getRoom(w, r)
 	if !ok {
 		return
 	}
@@ -193,7 +193,7 @@ func (h apiHandler) handleCreateRoomMessage(w http.ResponseWriter, r *http.Reque
 	})
 }
 func (h apiHandler) handleGetRoomMessages(w http.ResponseWriter, r *http.Request) {
-	roomID, ok := h.getRoom(w, r)
+	_, roomID, ok := h.getRoom(w, r)
 	if !ok {
 		return
 	}
@@ -210,7 +210,25 @@ func (h apiHandler) handleGetRoomMessages(w http.ResponseWriter, r *http.Request
 
 	h.respondWithJSON(w, http.StatusOK, messages)
 }
-func (h apiHandler) handleGetRoomMessage(w http.ResponseWriter, r *http.Request)         {}
+
+func (h apiHandler) handleGetRoomMessage(w http.ResponseWriter, r *http.Request) {
+	message, _, ok := h.getMessage(w, r)
+	if !ok {
+		return
+	}
+	_, roomID, ok := h.getRoom(w, r)
+	if !ok {
+		return
+	}
+
+	if message.RoomID != roomID {
+		h.handleError(w, "message does not belong to the specified room", nil, http.StatusNotFound)
+		return
+	}
+
+	h.respondWithJSON(w, http.StatusOK, message)
+}
+
 func (h apiHandler) handleReactToMessage(w http.ResponseWriter, r *http.Request)         {}
 func (h apiHandler) handleRemoveReactFromMessage(w http.ResponseWriter, r *http.Request) {}
 func (h apiHandler) handleMaskMessageAsAnswered(w http.ResponseWriter, r *http.Request)  {}

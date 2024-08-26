@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/igorjpimenta/AskMeAnything/internal/store/pgstore"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -43,26 +45,34 @@ func (h apiHandler) respondWithJSON(w http.ResponseWriter, status int, response 
 	}
 }
 
-func (h apiHandler) getRoom(w http.ResponseWriter, r *http.Request) (roomID uuid.UUID, ok bool) {
-	rawRoomID := chi.URLParam(r, "room_id")
-	roomID, err := uuid.Parse(rawRoomID)
+func getEntityByID[T any](h apiHandler, w http.ResponseWriter, r *http.Request, param string, fetchFunc func(ctx context.Context, id uuid.UUID) (entity T, err error)) (entity T, id uuid.UUID, ok bool) {
+	var zero T
+	rawID := chi.URLParam(r, param)
+	id, err := uuid.Parse(rawID)
 	if err != nil {
-		h.handleError(w, "invalid room id", err, http.StatusBadRequest)
-		return uuid.Nil, false
+		h.handleError(w, "invalid "+param, err, http.StatusBadRequest)
+		return zero, uuid.Nil, false
 	}
 
-	_, err = h.q.GetRoom(r.Context(), roomID)
+	entity, err = fetchFunc(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			h.handleError(w, "room not found", err, http.StatusBadRequest)
-			return uuid.Nil, false
+			h.handleError(w, param+" not found", err, http.StatusBadRequest)
+			return zero, uuid.Nil, false
 		}
-
 		h.handleError(w, "something went wrong", err, http.StatusInternalServerError)
-		return uuid.Nil, false
+		return zero, uuid.Nil, false
 	}
 
-	return roomID, true
+	return entity, id, true
+}
+
+func (h apiHandler) getRoom(w http.ResponseWriter, r *http.Request) (room pgstore.Room, roomID uuid.UUID, ok bool) {
+	return getEntityByID(h, w, r, "room_id", h.q.GetRoom)
+}
+
+func (h apiHandler) getMessage(w http.ResponseWriter, r *http.Request) (message pgstore.Message, messageID uuid.UUID, ok bool) {
+	return getEntityByID(h, w, r, "message_id", h.q.GetMessage)
 }
 
 func (h apiHandler) notifyClients(msg Message) {
