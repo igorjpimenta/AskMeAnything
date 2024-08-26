@@ -38,7 +38,7 @@ returning "id";
 -- name: ReactToMessage :one
 update messages
 set
-    reaction_count = rection_count + 1
+    reaction_count = reaction_count + 1
 where
     id = $1
 returning reaction_count;
@@ -46,7 +46,7 @@ returning reaction_count;
 -- name: RemoveReactionFromMessage :one
 update messages
 set
-    reaction_count = rection_count - 1
+    reaction_count = reaction_count - 1
 where
     id = $1
 returning reaction_count;

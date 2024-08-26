@@ -155,7 +155,7 @@ func (q *Queries) MarkMessageAnswered(ctx context.Context, id uuid.UUID) error {
 const reactToMessage = `-- name: ReactToMessage :one
 update messages
 set
-    reaction_count = rection_count + 1
+    reaction_count = reaction_count + 1
 where
     id = $1
 returning reaction_count
@@ -171,7 +171,7 @@ func (q *Queries) ReactToMessage(ctx context.Context, id uuid.UUID) (int64, erro
 const removeReactionFromMessage = `-- name: RemoveReactionFromMessage :one
 update messages
 set
-    reaction_count = rection_count - 1
+    reaction_count = reaction_count - 1
 where
     id = $1
 returning reaction_count
