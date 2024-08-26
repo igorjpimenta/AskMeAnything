@@ -192,7 +192,24 @@ func (h apiHandler) handleCreateRoomMessage(w http.ResponseWriter, r *http.Reque
 		},
 	})
 }
-func (h apiHandler) handleGetRoomMessages(w http.ResponseWriter, r *http.Request)        {}
+func (h apiHandler) handleGetRoomMessages(w http.ResponseWriter, r *http.Request) {
+	roomID, ok := h.getRoom(w, r)
+	if !ok {
+		return
+	}
+
+	messages, err := h.q.GetRoomMessages(r.Context(), roomID)
+	if err != nil {
+		h.handleError(w, "failed to get messages from the room", err, http.StatusInternalServerError)
+		return
+	}
+
+	if messages == nil {
+		messages = []pgstore.Message{}
+	}
+
+	h.respondWithJSON(w, http.StatusOK, messages)
+}
 func (h apiHandler) handleGetRoomMessage(w http.ResponseWriter, r *http.Request)         {}
 func (h apiHandler) handleReactToMessage(w http.ResponseWriter, r *http.Request)         {}
 func (h apiHandler) handleRemoveReactFromMessage(w http.ResponseWriter, r *http.Request) {}
