@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type TbMessage struct {
+type Message struct {
 	ID            uuid.UUID
 	RoomID        uuid.UUID
 	Message       string
@@ -16,7 +16,7 @@ type TbMessage struct {
 	Answered      bool
 }
 
-type TbRoom struct {
+type Room struct {
 	ID    uuid.UUID
 	Theme string
 }

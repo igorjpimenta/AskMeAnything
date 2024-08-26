@@ -14,14 +14,14 @@ import (
 const getMessage = `-- name: GetMessage :one
 select
     "id", "room_id", "message", "reaction_count", "answered"
-from tb_messages
+from messages
 where
     id = $1
 `
 
-func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (TbMessage, error) {
+func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (Message, error) {
 	row := q.db.QueryRow(ctx, getMessage, id)
-	var i TbMessage
+	var i Message
 	err := row.Scan(
 		&i.ID,
 		&i.RoomID,
@@ -35,13 +35,13 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (TbMessage, erro
 const getRoom = `-- name: GetRoom :one
 select
     "id", "theme"
-from tb_rooms
+from rooms
 where id = $1
 `
 
-func (q *Queries) GetRoom(ctx context.Context, id uuid.UUID) (TbRoom, error) {
+func (q *Queries) GetRoom(ctx context.Context, id uuid.UUID) (Room, error) {
 	row := q.db.QueryRow(ctx, getRoom, id)
-	var i TbRoom
+	var i Room
 	err := row.Scan(&i.ID, &i.Theme)
 	return i, err
 }
@@ -49,20 +49,20 @@ func (q *Queries) GetRoom(ctx context.Context, id uuid.UUID) (TbRoom, error) {
 const getRoomMessages = `-- name: GetRoomMessages :many
 select
     "id", "room_id", "message", "reaction_count", "answered"
-from tb_messages
+from messages
 where
     room_id = $1
 `
 
-func (q *Queries) GetRoomMessages(ctx context.Context, roomID uuid.UUID) ([]TbMessage, error) {
+func (q *Queries) GetRoomMessages(ctx context.Context, roomID uuid.UUID) ([]Message, error) {
 	rows, err := q.db.Query(ctx, getRoomMessages, roomID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TbMessage
+	var items []Message
 	for rows.Next() {
-		var i TbMessage
+		var i Message
 		if err := rows.Scan(
 			&i.ID,
 			&i.RoomID,
@@ -83,18 +83,18 @@ func (q *Queries) GetRoomMessages(ctx context.Context, roomID uuid.UUID) ([]TbMe
 const getRooms = `-- name: GetRooms :many
 select
     "id", "theme"
-from tb_rooms
+from rooms
 `
 
-func (q *Queries) GetRooms(ctx context.Context) ([]TbRoom, error) {
+func (q *Queries) GetRooms(ctx context.Context) ([]Room, error) {
 	rows, err := q.db.Query(ctx, getRooms)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TbRoom
+	var items []Room
 	for rows.Next() {
-		var i TbRoom
+		var i Room
 		if err := rows.Scan(&i.ID, &i.Theme); err != nil {
 			return nil, err
 		}
@@ -107,7 +107,7 @@ func (q *Queries) GetRooms(ctx context.Context) ([]TbRoom, error) {
 }
 
 const insertMessage = `-- name: InsertMessage :one
-insert into tb_messages("room_id", "message")
+insert into messages("room_id", "message")
     values
         ($1, $2)
 returning "id"
@@ -126,7 +126,7 @@ func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (u
 }
 
 const insertRoom = `-- name: InsertRoom :one
-insert into tb_rooms("theme")
+insert into rooms("theme")
     values
         ($1)
 returning "id"
@@ -140,7 +140,7 @@ func (q *Queries) InsertRoom(ctx context.Context, theme string) (uuid.UUID, erro
 }
 
 const markMessageAnswered = `-- name: MarkMessageAnswered :exec
-update tb_messages
+update messages
 set
     answered = true
 where
@@ -153,7 +153,7 @@ func (q *Queries) MarkMessageAnswered(ctx context.Context, id uuid.UUID) error {
 }
 
 const reactToMessage = `-- name: ReactToMessage :one
-update tb_messages
+update messages
 set
     reaction_count = rection_count + 1
 where
@@ -169,7 +169,7 @@ func (q *Queries) ReactToMessage(ctx context.Context, id uuid.UUID) (int64, erro
 }
 
 const removeReactionFromMessage = `-- name: RemoveReactionFromMessage :one
-update tb_messages
+update messages
 set
     reaction_count = rection_count - 1
 where

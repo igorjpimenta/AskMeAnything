@@ -152,7 +152,7 @@ func (h apiHandler) handleGetRooms(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if rooms == nil {
-		rooms = []pgstore.TbRoom{}
+		rooms = []pgstore.Room{}
 	}
 
 	h.respondWithJSON(w, http.StatusOK, rooms)
