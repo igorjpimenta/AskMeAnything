@@ -91,3 +91,21 @@ func (h apiHandler) notifyClients(msg Message) {
 		}
 	}
 }
+
+func (h apiHandler) validateMessageRoom(w http.ResponseWriter, r *http.Request) (message pgstore.Message, roomID uuid.UUID, ok bool) {
+	message, _, ok = h.getMessage(w, r)
+	if !ok {
+		return
+	}
+	_, roomID, ok = h.getRoom(w, r)
+	if !ok {
+		return
+	}
+
+	if message.RoomID != roomID {
+		h.handleError(w, "message does not belong to the specified room", nil, http.StatusNotFound)
+		return pgstore.Message{}, uuid.Nil, false
+	}
+
+	return message, roomID, true
+}

@@ -72,8 +72,20 @@ func NewHandler(q *pgstore.Queries) http.Handler {
 }
 
 const (
-	MessageKindMessageCreated = "message_created"
+	MessageKindMessageCreated           = "message_created"
+	MessageKindMessageReactionIncreased = "message_reaction_increased"
+	MessageKindMessageReactionDecreased = "message_reaction_decreased"
 )
+
+type MessageMessageReactionDecreased struct {
+	ID    string `json:"id"`
+	Count int64  `json:"count"`
+}
+
+type MessageMessageReactionIncreased struct {
+	ID    string `json:"id"`
+	Count int64  `json:"count"`
+}
 
 type MessageMessageCreated struct {
 	ID      string `json:"id"`
@@ -192,6 +204,7 @@ func (h apiHandler) handleCreateRoomMessage(w http.ResponseWriter, r *http.Reque
 		},
 	})
 }
+
 func (h apiHandler) handleGetRoomMessages(w http.ResponseWriter, r *http.Request) {
 	_, roomID, ok := h.getRoom(w, r)
 	if !ok {
@@ -212,23 +225,68 @@ func (h apiHandler) handleGetRoomMessages(w http.ResponseWriter, r *http.Request
 }
 
 func (h apiHandler) handleGetRoomMessage(w http.ResponseWriter, r *http.Request) {
-	message, _, ok := h.getMessage(w, r)
+	message, _, ok := h.validateMessageRoom(w, r)
 	if !ok {
-		return
-	}
-	_, roomID, ok := h.getRoom(w, r)
-	if !ok {
-		return
-	}
-
-	if message.RoomID != roomID {
-		h.handleError(w, "message does not belong to the specified room", nil, http.StatusNotFound)
 		return
 	}
 
 	h.respondWithJSON(w, http.StatusOK, message)
 }
 
-func (h apiHandler) handleReactToMessage(w http.ResponseWriter, r *http.Request)         {}
-func (h apiHandler) handleRemoveReactFromMessage(w http.ResponseWriter, r *http.Request) {}
-func (h apiHandler) handleMaskMessageAsAnswered(w http.ResponseWriter, r *http.Request)  {}
+func (h apiHandler) handleReactToMessage(w http.ResponseWriter, r *http.Request) {
+	message, roomID, ok := h.validateMessageRoom(w, r)
+	if !ok {
+		return
+	}
+
+	reactionCount, err := h.q.ReactToMessage(r.Context(), message.ID)
+	if err != nil {
+		h.handleError(w, "failed to react to message", err, http.StatusInternalServerError)
+		return
+	}
+
+	type response struct {
+		Count int64 `json:"count"`
+	}
+
+	h.respondWithJSON(w, http.StatusOK, response{Count: reactionCount})
+
+	go h.notifyClients(Message{
+		Kind:   MessageKindMessageReactionIncreased,
+		RoomID: roomID.String(),
+		Value: MessageMessageReactionIncreased{
+			ID:    message.ID.String(),
+			Count: reactionCount,
+		},
+	})
+}
+
+func (h apiHandler) handleRemoveReactFromMessage(w http.ResponseWriter, r *http.Request) {
+	message, roomID, ok := h.validateMessageRoom(w, r)
+	if !ok {
+		return
+	}
+
+	reactionCount, err := h.q.RemoveReactionFromMessage(r.Context(), message.ID)
+	if err != nil {
+		h.handleError(w, "failed to react to message", err, http.StatusInternalServerError)
+		return
+	}
+
+	type response struct {
+		Count int64 `json:"count"`
+	}
+
+	h.respondWithJSON(w, http.StatusOK, response{Count: reactionCount})
+
+	go h.notifyClients(Message{
+		Kind:   MessageKindMessageReactionDecreased,
+		RoomID: roomID.String(),
+		Value: MessageMessageReactionDecreased{
+			ID:    message.ID.String(),
+			Count: reactionCount,
+		},
+	})
+}
+
+func (h apiHandler) handleMaskMessageAsAnswered(w http.ResponseWriter, r *http.Request) {}
