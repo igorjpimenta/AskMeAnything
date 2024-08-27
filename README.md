@@ -30,6 +30,7 @@ Welcome to the Ask Me Anything (AMA) application! This project is a real-time pl
 ## Tech Stack
 
 - **Backend:** Go (Golang)
+- **Frontend:** React.js, Tailwind and Typescript
 - **WebSockets:** For real-time communication
 - **Database:** PostgreSQL (running in Docker)
 - **Containerization:** Docker
@@ -42,13 +43,14 @@ Before you begin, ensure you have the following installed:
 
 - [Go](https://golang.org/doc/install)
 - [Docker](https://www.docker.com/get-started)
+- [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/)
 
 ### Installation
 
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/igorjpimenta/AskMeAnything.git
-   cd AskMeAnything
+   cd AskMeAnything/backend
 
 2. **Install dependencies**:
     ```bash
@@ -73,8 +75,8 @@ Before you begin, ensure you have the following installed:
 ### License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-### Acknowledgments
-- Inspired by an event from Rocketseat, the main repo is available [here](https://github.com/rocketseat-education/semana-tech-01-go-react-server/).
+## Acknowledgments
+- Inspired by an event from Rocketseat, the main backend repo is available [here](https://github.com/rocketseat-education/semana-tech-01-go-react-server/), and frontend [here](https://github.com/rocketseat-education/semana-tech-01-go-react-web).
 
-### Contact
+## Contact
 If you have any questions or suggestions, feel free to open an issue or contact the project maintainers.

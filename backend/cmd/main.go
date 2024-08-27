@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,8 +16,8 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		panic(err)
+	if err := godotenv.Load("../.env"); err != nil {
+		slog.Error("Error loading .env file", "error", err)
 	}
 
 	ctx := context.Background()
@@ -31,7 +32,7 @@ func main() {
 	))
 
 	if err != nil {
-		panic(err)
+		slog.Error("Error connecting to the database", "error", err)
 	}
 
 	defer pool.Close()
