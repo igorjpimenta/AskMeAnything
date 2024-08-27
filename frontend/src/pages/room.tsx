@@ -1,8 +1,9 @@
 import amaLogo from '../assets/ama-logo.svg'
 
 import { useParams } from "react-router-dom"
-import { ArrowRight, ArrowUp, Share2 } from "lucide-react"
+import { ArrowRight, Share2 } from "lucide-react"
 import { toast } from "sonner"
+import { Message } from '../components/message'
 
 export function Room() {
     const { roomId } = useParams()
@@ -62,22 +63,23 @@ export function Room() {
             </form>
 
             <ol className="list-decimal list-outside px-3 space-y-8">
-                <li className="ml-4 leading-relaxed text-zinc-100">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc laoreet pharetra dui, in luctus nibh bibendum eu. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi pellentesque dolor nec ultrices tincidunt.
-
-                    <button type="button" className="mt-3 flex items-center gap-2 text-orange-400 text-sm font-medium hover:text-orange-500">
-                        <ArrowUp className="size-4" />
-                        Like question (123)
-                    </button>
-                </li>
-                <li className="ml-4 leading-relaxed text-zinc-100">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc laoreet pharetra dui, in luctus nibh bibendum eu. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi pellentesque dolor nec ultrices tincidunt.
-
-                    <button type="button" className="mt-3 flex items-center gap-2 text-zinc-400 text-sm font-medium hover:text-zinc-300">
-                        <ArrowUp className="size-4" />
-                        Like question
-                    </button>
-                </li>
+                <Message
+                    text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur volutpat dignissim mollis."
+                    amountOfReactions={85}
+                    answered
+                />
+                <Message
+                    text="Duis a lacinia sem, vel bibendum leo. Proin feugiat dui vehicula ante finibus pretium. Ut placerat purus diam, a mollis arcu efficitur et. Aenean et dui sagittis, interdum orci sit amet, rutrum est."
+                    amountOfReactions={10}
+                />
+                <Message
+                    text="Nullam varius vestibulum risus nec dignissim."
+                    amountOfReactions={5}
+                />
+                <Message
+                    text="Nam convallis, nunc eget maximus elementum, lectus urna accumsan felis, mollis ornare enim ligula tempus nisl."
+                    amountOfReactions={1}
+                />
             </ol>
         </div>
     )
