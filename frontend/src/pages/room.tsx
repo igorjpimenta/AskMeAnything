@@ -1,10 +1,24 @@
-import { useParams } from "react-router-dom"
-
 import amaLogo from '../assets/ama-logo.svg'
+
+import { useParams } from "react-router-dom"
 import { ArrowRight, ArrowUp, Share2 } from "lucide-react"
+import { toast } from "sonner"
 
 export function Room() {
     const { roomId } = useParams()
+
+    function handleShareRoom() {
+        const url = window.location.href.toString()
+
+        if (navigator.share != undefined && navigator.canShare()) {
+            navigator.share({ url })
+            
+        } else {
+            navigator.clipboard.writeText(url)
+
+            toast.info('The room URL was copied to your clipboard!')
+        }
+    }
 
     return (
         <div className="mx-auto max-w-[640px] flex flex-col gap-6 py-10 px-4">
@@ -17,6 +31,7 @@ export function Room() {
                     
                 <button
                     type="submit"
+                    onClick={handleShareRoom}
                     className="ml-auto bg-zinc-800 text-zinc-300 px-3 py-1.5 gap-1.5 flex items-center rounded-lg font-medium text-sm transition-colors hover:bg-zinc-700"
                 >
                     Share room
