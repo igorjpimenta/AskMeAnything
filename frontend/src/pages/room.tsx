@@ -1,9 +1,10 @@
 import amaLogo from '../assets/ama-logo.svg'
+import { Messages } from '../components/messages'
 
 import { useParams } from "react-router-dom"
 import { ArrowRight, Share2 } from "lucide-react"
 import { toast } from "sonner"
-import { Message } from '../components/message'
+import { Suspense } from "react"
 
 export function Room() {
     const { roomId } = useParams()
@@ -61,26 +62,10 @@ export function Room() {
                     <ArrowRight className="size-4"/>
                 </button>
             </form>
-
-            <ol className="list-decimal list-outside px-3 space-y-8">
-                <Message
-                    text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur volutpat dignissim mollis."
-                    amountOfReactions={85}
-                    answered
-                />
-                <Message
-                    text="Duis a lacinia sem, vel bibendum leo. Proin feugiat dui vehicula ante finibus pretium. Ut placerat purus diam, a mollis arcu efficitur et. Aenean et dui sagittis, interdum orci sit amet, rutrum est."
-                    amountOfReactions={10}
-                />
-                <Message
-                    text="Nullam varius vestibulum risus nec dignissim."
-                    amountOfReactions={5}
-                />
-                <Message
-                    text="Nam convallis, nunc eget maximus elementum, lectus urna accumsan felis, mollis ornare enim ligula tempus nisl."
-                    amountOfReactions={1}
-                />
-            </ol>
+            
+            <Suspense fallback={<p>Loading...</p>}>
+                <Messages />
+            </Suspense>
         </div>
     )
 }
