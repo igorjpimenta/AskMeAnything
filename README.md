@@ -18,6 +18,7 @@ Welcome to the Ask Me Anything (AMA) application! This project is a real-time pl
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running the Application](#running-the-application)
+- [License](#license)
 - [Acknowledgments](#acknowledgments)
 - [Contact](#contact)
 
@@ -29,8 +30,8 @@ Welcome to the Ask Me Anything (AMA) application! This project is a real-time pl
 
 ## Tech Stack
 
+- **Frontend**: React, TypeScript, Tailwind CSS
 - **Backend:** Go (Golang)
-- **Frontend:** React.js, Tailwind and Typescript
 - **WebSockets:** For real-time communication
 - **Database:** PostgreSQL (running in Docker)
 - **Containerization:** Docker
@@ -43,40 +44,89 @@ Before you begin, ensure you have the following installed:
 
 - [Go](https://golang.org/doc/install)
 - [Docker](https://www.docker.com/get-started)
-- [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/)
+- [Node.js and npm](https://nodejs.org/) (for frontend development)
 
 ### Installation
 
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/igorjpimenta/AskMeAnything.git
-   cd AskMeAnything/backend
+   cd AskMeAnything
+    ```
 
-2. **Install dependencies**:
+2. **Install backend dependencies**:
     ```bash
+    cd backend
     go mod download
+    ```
 
 3. **Run PostgreSQL in Docker**:
     ```bash
     docker-compose up -d
+    ```
 
 4. **Run database migrations:**:
     ```bash
     go generate ./...
+    ```
+
+5. **Install frontend dependencies**:
+    ```bash
+    cd ../frontend
+    npm install -f
+    ```
 
 ### Running the Application
 
 1. **Run the backend server**:
     ```bash
+    cd backend
     go run ./cmd/main.go
+    ```
+    The backend server will start on `http://localhost:8080`.
 
-2. The backend server will start on `http://localhost:8080`
+2. **Run the frontend development server**:
+    ```bash
+    cd ../frontend
+    npm run dev
+    ```
+    The frontend application will start on `http://localhost:3000`.
 
-### License
+## Contributing
+We welcome contributions from the community! Here's how you can get involved:
+
+1. Fork the repository: Click the "Fork" button at the top right of this page.
+
+2. Clone your fork:
+    ```bash
+    git clone https://github.com/yourusername/AskMeAnything.git
+    ```
+
+3. Create a branch:
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+
+4. Make your changes: Write clear, concise commit messages.
+
+5. Push to your fork:
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+
+6. Submit a pull request: Describe your changes in the PR and link any relevant issues.
+
+### Contribution Guidelines
+- Follow the existing code style.
+- Write tests for new features or bug fixes.
+- Keep your pull requests small and focused on a single issue or feature.
+- Provide clear documentation for new features.
+
+## License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
 - Inspired by an event from Rocketseat, the main backend repo is available [here](https://github.com/rocketseat-education/semana-tech-01-go-react-server/), and frontend [here](https://github.com/rocketseat-education/semana-tech-01-go-react-web).
 
 ## Contact
-If you have any questions or suggestions, feel free to open an issue or contact the project maintainers.
+May you have questions or suggestions, feel free to open an issue or contact the project maintainers.
