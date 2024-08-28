@@ -1,10 +1,20 @@
-import { config } from "../../config";
+import { config } from "../../config"
+import { sortMessages } from "../utils/sort-messages"
 
 interface GetRoomMessagesRequest {
     roomId: string
 }
 
-export async function getRoomMessages({ roomId }: GetRoomMessagesRequest) {
+export interface GetRoomMessagesResponse {
+    messages: {
+        id: string
+        text: string
+        amountOfReactions: number
+        answered: boolean
+    }[]
+}
+
+export async function getRoomMessages({ roomId }: GetRoomMessagesRequest): Promise<GetRoomMessagesResponse> {
     const response = await fetch(`${config.API_URL}/api/rooms/${roomId}/messages`)
 
     const data: Array<{
@@ -15,20 +25,14 @@ export async function getRoomMessages({ roomId }: GetRoomMessagesRequest) {
         Answered: boolean
     }> = await response.json()
 
-    return {
-        messages: data
-            .map(item => ({
-                id: item.ID,
-                text: item.Message,
-                amountOfReactions: item.ReactionCount,
-                answered: item.Answered,
-            }))
-            .sort((a, b) => {
-                if (b.answered !== a.answered) {
-                    return a.answered ? 1 : -1
-                }
+    const messages = data.map(item => ({
+        id: item.ID,
+        text: item.Message,
+        amountOfReactions: item.ReactionCount,
+        answered: item.Answered,
+    }))
 
-                return b.amountOfReactions - a.amountOfReactions
-            })
+    return {
+        messages: sortMessages(messages)
     }
 }
