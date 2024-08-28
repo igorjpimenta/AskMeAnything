@@ -1,10 +1,10 @@
-import { reactToMessage } from "../http/react-to-message";
-import { removeReactFromMessage } from "../http/remove-react-from-message";
+import { reactToMessage } from "../http/react-to-message"
+import { removeReactFromMessage } from "../http/remove-react-from-message"
 
-import { ArrowUp } from "lucide-react";
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { toast } from "sonner";
+import { ArrowUp } from "lucide-react"
+import { useState } from "react"
+import { useParams } from "react-router-dom"
+import { toast } from "sonner"
 
 interface MessageProps {
     id: string
@@ -16,11 +16,10 @@ interface MessageProps {
 export function Message({
     id: messageId,
     text,
-    amountOfReactions: initialAmountOfReactions,
+    amountOfReactions,
     answered=false
 }: MessageProps) {
     const [hasReacted, setHasReacted] = useState(false)
-    const [amountOfReactions, setAmountOfReactions] = useState(initialAmountOfReactions)
     const { roomId } = useParams()
 
     async function handleReactToMessage() {
@@ -33,8 +32,7 @@ export function Message({
         }
 
         try {
-            const data: { amountOfReactions: number } = await reactToMessage({ roomId, messageId })
-            setAmountOfReactions(data.amountOfReactions)
+            await reactToMessage({ roomId, messageId })
             setHasReacted(true)
 
         } catch {
@@ -52,8 +50,7 @@ export function Message({
         }
 
         try {
-            const data: { amountOfReactions: number } = await removeReactFromMessage({ roomId, messageId })
-            setAmountOfReactions(data.amountOfReactions)
+            await removeReactFromMessage({ roomId, messageId })
             setHasReacted(false)
 
         } catch {
