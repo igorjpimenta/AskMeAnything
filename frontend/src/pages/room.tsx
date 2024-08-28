@@ -1,6 +1,6 @@
 import amaLogo from '../assets/ama-logo.svg'
 import { Messages } from '../components/messages'
-import { CreateMessageForm } from '../components/create-message-form'
+import { CreateMessageForm } from '../components/message-form'
 
 import { useParams } from "react-router-dom"
 import { Share2 } from "lucide-react"

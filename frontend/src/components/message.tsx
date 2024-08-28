@@ -1,17 +1,64 @@
+import { reactToMessage } from "../http/react-to-message";
+import { removeReactFromMessage } from "../http/remove-react-from-message";
+
 import { ArrowUp } from "lucide-react";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 interface MessageProps {
+    id: string
     text: string
     amountOfReactions: number
     answered?: boolean
 }
 
-export function Message( { text, amountOfReactions, answered=false }: MessageProps) {
+export function Message({
+    id: messageId,
+    text,
+    amountOfReactions: initialAmountOfReactions,
+    answered=false
+}: MessageProps) {
     const [hasReacted, setHasReacted] = useState(false)
+    const [amountOfReactions, setAmountOfReactions] = useState(initialAmountOfReactions)
+    const { roomId } = useParams()
 
-    function handleReactToMessage() {
-        setHasReacted(true)
+    async function handleReactToMessage() {
+        if (!roomId) {
+            throw new Error('Message components must be used within room page')
+        }
+
+        if (!messageId) {
+            return
+        }
+
+        try {
+            const data: { amountOfReactions: number } = await reactToMessage({ roomId, messageId })
+            setAmountOfReactions(data.amountOfReactions)
+            setHasReacted(true)
+
+        } catch {
+            toast.error('Error reacting to message!')
+        }
+    }
+
+    async function handleRemoveReactFromMessage() {
+        if (!roomId) {
+            return
+        }
+
+        if (!messageId) {
+            return
+        }
+
+        try {
+            const data: { amountOfReactions: number } = await removeReactFromMessage({ roomId, messageId })
+            setAmountOfReactions(data.amountOfReactions)
+            setHasReacted(false)
+
+        } catch {
+            toast.error('Error removing react from message!')
+        }
     }
 
     return (
@@ -19,12 +66,20 @@ export function Message( { text, amountOfReactions, answered=false }: MessagePro
             {text}
 
             {hasReacted ? (
-                <button type="button" className="mt-3 flex items-center gap-2 select-none text-orange-400 text-sm font-medium hover:text-orange-500">
+                <button
+                    onClick={handleRemoveReactFromMessage}
+                    type="button"
+                    className="mt-3 flex items-center gap-2 select-none text-orange-400 text-sm font-medium hover:text-orange-500"
+                >
                     <ArrowUp className="size-4" />
                     Like question ({amountOfReactions})
                 </button>
             ) : (
-                <button onClick={handleReactToMessage} type="button" className="mt-3 flex items-center gap-2 select-none text-zinc-400 text-sm font-medium hover:text-zinc-300">
+                <button
+                    onClick={handleReactToMessage}
+                    type="button"
+                    className="mt-3 flex items-center gap-2 select-none text-zinc-400 text-sm font-medium hover:text-zinc-300"
+                >
                     <ArrowUp className="size-4" />
                     Like question ({amountOfReactions})
                 </button>

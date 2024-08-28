@@ -11,7 +11,7 @@ export function CreateMessageForm() {
         const message = data.get('message')?.toString()
 
         if (!roomId) {
-            return
+            throw new Error('Message form components must be used within room page')
         }
 
         if (!message) {
