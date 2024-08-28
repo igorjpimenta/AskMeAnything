@@ -1,5 +1,4 @@
 import { config } from "../../config"
-import { sortMessages } from "../utils/sort-messages"
 
 interface GetRoomMessagesRequest {
     roomId: string
@@ -25,14 +24,12 @@ export async function getRoomMessages({ roomId }: GetRoomMessagesRequest): Promi
         Answered: boolean
     }> = await response.json()
 
-    const messages = data.map(item => ({
-        id: item.ID,
-        text: item.Message,
-        amountOfReactions: item.ReactionCount,
-        answered: item.Answered,
-    }))
-
     return {
-        messages: sortMessages(messages)
+        messages: data.map(item => ({
+            id: item.ID,
+            text: item.Message,
+            amountOfReactions: item.ReactionCount,
+            answered: item.Answered,
+        })),
     }
 }

@@ -1,5 +1,4 @@
 import { GetRoomMessagesResponse } from "../http/get-room-messages"
-import { sortMessages } from "../utils/sort-messages"
 
 import { QueryClient } from "@tanstack/react-query"
 
@@ -17,16 +16,14 @@ export function handleMessageAnswered(
             return undefined
         }
 
-        const messages = state.messages.map(item => {
-            if (item.id === value.id) {
-                return { ...item, answered: true }
-            }
-
-            return item
-        })
-
         return {
-            messages: sortMessages(messages),
+            messages: state.messages.map(item => {
+                if (item.id === value.id) {
+                    return { ...item, answered: true }
+                }
+    
+                return item
+            }),
         }
     })
 }
