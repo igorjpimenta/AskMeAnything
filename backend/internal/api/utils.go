@@ -75,23 +75,6 @@ func (h apiHandler) getMessage(w http.ResponseWriter, r *http.Request) (message 
 	return getEntityByID(h, w, r, "message_id", h.q.GetMessage)
 }
 
-func (h apiHandler) notifyClients(msg Message) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	subscribers, ok := h.subscribers[msg.RoomID]
-	if !ok || len(subscribers) == 0 {
-		return
-	}
-
-	for conn, cancel := range subscribers {
-		if err := conn.WriteJSON(msg); err != nil {
-			slog.Error("failed to send message to client", "error", err)
-			cancel()
-		}
-	}
-}
-
 func (h apiHandler) validateMessageRoom(w http.ResponseWriter, r *http.Request) (message pgstore.Message, roomID uuid.UUID, ok bool) {
 	message, _, ok = h.getMessage(w, r)
 	if !ok {
