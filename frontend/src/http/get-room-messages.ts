@@ -17,19 +17,19 @@ export async function getRoomMessages({ roomId }: GetRoomMessagesRequest): Promi
     const response = await fetch(`${config.API_URL}/api/rooms/${roomId}/messages`)
 
     const data: Array<{
-        ID: string
-        RoomID: string
-        Message: string
-        ReactionCount: number
-        Answered: boolean
+        id: string
+        room_id: string
+        message: string
+        reaction_count: number
+        answered: boolean
     }> = await response.json()
 
     return {
         messages: data.map(item => ({
-            id: item.ID,
-            text: item.Message,
-            amountOfReactions: item.ReactionCount,
-            answered: item.Answered,
+            id: item.id,
+            text: item.message,
+            amountOfReactions: item.reaction_count,
+            answered: item.answered,
         })),
     }
 }
