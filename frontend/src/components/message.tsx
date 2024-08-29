@@ -2,7 +2,7 @@ import { reactToMessage } from "../http/react-to-message"
 import { removeReactFromMessage } from "../http/remove-react-from-message"
 
 import { ArrowUp } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { toast } from "sonner"
 
@@ -22,6 +22,13 @@ export function Message({
     const [hasReacted, setHasReacted] = useState(false)
     const { roomId } = useParams()
 
+    useEffect(() => {
+        const storedReaction = localStorage.getItem(`reacted-${roomId}-${messageId}`)
+        if (storedReaction) {
+            setHasReacted(true)
+        }
+    }, [roomId, messageId])
+
     async function handleReactToMessage() {
         if (!roomId) {
             throw new Error('Message components must be used within room page')
@@ -33,6 +40,7 @@ export function Message({
 
         try {
             await reactToMessage({ roomId, messageId })
+            localStorage.setItem(`reacted-${roomId}-${messageId}`, 'true')
             setHasReacted(true)
 
         } catch {
@@ -51,6 +59,7 @@ export function Message({
 
         try {
             await removeReactFromMessage({ roomId, messageId })
+            localStorage.removeItem(`reacted-${roomId}-${messageId}`)
             setHasReacted(false)
 
         } catch {
