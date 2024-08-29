@@ -24,9 +24,10 @@ Welcome to the Ask Me Anything (AMA) application! This project is a real-time pl
 
 ## Features
 
-- **Real-time Q&A**: Users can ask and answer questions in real-time.
+- **Real-time Q&A**: Get real-time questions from the community and answer them live.
 - **Room-Based Discussions:** Create rooms for different topics or sessions.
-- **WebSocket Integration**: Low-latency communication using WebSocket.
+- **Real-Time Updates**: Receive real-time updates on message creation, reactions, and status changes via WebSockets.
+- **Room Sharing**: Share the room URL to allow others to join and participate.
 
 ## Tech Stack
 
@@ -48,29 +49,41 @@ Before you begin, ensure you have the following installed:
 
 ### Installation
 
-1. **Clone the repository:**
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/igorjpimenta/AskMeAnything.git
    cd AskMeAnything
     ```
 
-2. **Install backend dependencies**:
+2. **Set the environment variables**:
+    ```bash
+    echo 'DATABASE_HOST="localhost"
+    DATABASE_PORT=5432
+    DATABASE_NAME="your-database-name"
+    DATABASE_USER="your-database-user"
+    DATABASE_PASSWORD="your-database-password"
+    PGADMIN_USER="your-pgadmin-user"
+    PGADMIN_PASSWORD="your-pgadmin-password"
+    VITE_API_URL="http://localhost:8080"
+    VITE_WS_URL="ws://localhost:8080"' > .env
+
+3. **Install backend dependencies**:
     ```bash
     cd backend
     go mod download
     ```
 
-3. **Run PostgreSQL in Docker**:
+4. **Run PostgreSQL in Docker**:
     ```bash
     docker-compose up -d
     ```
 
-4. **Run database migrations:**:
+5. **Run database migrations:**:
     ```bash
     go generate ./...
     ```
 
-5. **Install frontend dependencies**:
+6. **Install frontend dependencies**:
     ```bash
     cd ../frontend
     npm install -f
@@ -83,7 +96,7 @@ Before you begin, ensure you have the following installed:
     cd backend
     go run ./cmd/main.go
     ```
-    The backend server will start on `http://localhost:8080`.
+    The backend server will start on `http://localhost:8080` and pgAdmin on `http://localhost:8081`.
 
 2. **Run the frontend development server**:
     ```bash
