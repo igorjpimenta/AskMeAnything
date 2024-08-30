@@ -6,7 +6,17 @@ const (
 	MessageKindMessageReactionDecreased = "message_reaction_decreased"
 	MessageKindMessageAnswered          = "message_answered"
 	MessageKindMessageUnanswered        = "message_unanswered"
+	MessageKindMessageHidden            = "message_hidden"
+	MessageKindMessageUnhidden          = "message_unhidden"
 )
+
+type MessageMessageUnhidden struct {
+	ID string `json:"id"`
+}
+
+type MessageMessageHidden struct {
+	ID string `json:"id"`
+}
 
 type MessageMessageUnanswered struct {
 	ID string `json:"id"`

@@ -17,14 +17,14 @@ returning "id";
 
 -- name: GetMessage :one
 select
-    "id", "room_id", "message", "reaction_count", "answered"
+    "id", "room_id", "message", "reaction_count", "answered", "hidden"
 from messages
 where
     id = $1;
 
 -- name: GetRoomMessages :many
 select
-    "id", "room_id", "message", "reaction_count", "answered"
+    "id", "room_id", "message", "reaction_count", "answered", "hidden"
 from messages
 where
     room_id = $1;
@@ -62,5 +62,19 @@ where
 update messages
 set
     answered = false
+where
+    id = $1;
+
+-- name: HideMessage :exec
+update messages
+set
+    hidden = true
+where
+    id = $1;
+
+-- name: UnhideMessage :exec
+update messages
+set
+    hidden = false
 where
     id = $1;

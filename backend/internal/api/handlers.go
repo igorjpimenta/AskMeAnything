@@ -245,3 +245,67 @@ func (h apiHandler) handleMaskMessageAsUnanswered(w http.ResponseWriter, r *http
 		},
 	})
 }
+
+func (h apiHandler) handleHideMessage(w http.ResponseWriter, r *http.Request) {
+	message, room, ok := h.validateMessageRoom(w, r)
+	if !ok {
+		return
+	}
+
+	ownerToken := r.Header.Get("Owner-Token")
+	if !(room.OwnerToken.String() == ownerToken) {
+		h.handleError(w, "unauthorized", nil, http.StatusUnauthorized)
+		return
+	}
+
+	if message.Hidden {
+		h.handleError(w, "message already hidden", nil, http.StatusBadRequest)
+		return
+	}
+
+	err := h.q.HideMessage(r.Context(), message.ID)
+	if err != nil {
+		h.handleError(w, "failed to hide message", err, http.StatusInternalServerError)
+		return
+	}
+
+	go h.notifyClients(Message{
+		Kind:   MessageKindMessageHidden,
+		RoomID: room.ID.String(),
+		Value: MessageMessageHidden{
+			ID: message.ID.String(),
+		},
+	})
+}
+
+func (h apiHandler) handleUnhideMessage(w http.ResponseWriter, r *http.Request) {
+	message, room, ok := h.validateMessageRoom(w, r)
+	if !ok {
+		return
+	}
+
+	ownerToken := r.Header.Get("Owner-Token")
+	if !(room.OwnerToken.String() == ownerToken) {
+		h.handleError(w, "unauthorized", nil, http.StatusUnauthorized)
+		return
+	}
+
+	if !message.Hidden {
+		h.handleError(w, "message is not hidden", nil, http.StatusBadRequest)
+		return
+	}
+
+	err := h.q.UnhideMessage(r.Context(), message.ID)
+	if err != nil {
+		h.handleError(w, "failed to unhide message", err, http.StatusInternalServerError)
+		return
+	}
+
+	go h.notifyClients(Message{
+		Kind:   MessageKindMessageUnhidden,
+		RoomID: room.ID.String(),
+		Value: MessageMessageUnhidden{
+			ID: message.ID.String(),
+		},
+	})
+}

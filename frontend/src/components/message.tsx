@@ -2,8 +2,10 @@ import { reactToMessage } from "../http/react-to-message"
 import { removeReactFromMessage } from "../http/remove-react-from-message"
 import { markMessageAnswered } from "../http/mark-message-answered"
 import { markMessageUnanswered } from "../http/mark-message-unanswered"
+import { hideMessage } from "../http/hide-message"
+import { unhideMessage } from "../http/unhide-message"
 
-import { ArrowUp, CheckCircle, CircleSlash } from "lucide-react"
+import { ArrowUp, CheckCircle, CircleSlash, Eye, EyeOff } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { toast } from "sonner"
@@ -14,6 +16,7 @@ interface MessageProps {
     text: string
     amountOfReactions: number
     answered: boolean
+    hidden: boolean
     isOwner: boolean
 }
 
@@ -22,6 +25,7 @@ export function Message({
     text,
     amountOfReactions,
     answered,
+    hidden,
     isOwner,
 }: MessageProps) {
     const [hasReacted, setHasReacted] = useState(false)
@@ -104,13 +108,55 @@ export function Message({
         }
     }
 
-    return (
+    async function handleHideMessage() {
+        if (!roomId || !messageId || !isOwner) {
+            return
+        }
+
+        const ownerToken = localStorage.getItem(`owner_token-${roomId}`)
+        if (!ownerToken) {
+            return
+        }
+
+        try {
+            await hideMessage({ roomId, messageId, ownerToken })
+
+        } catch {
+            toast.error('Error trying to hide a message!')
+        }
+    }
+
+    async function handleUnhideMessage() {
+        if (!roomId || !messageId || !isOwner) {
+            return
+        }
+
+        const ownerToken = localStorage.getItem(`owner_token-${roomId}`)
+        if (!ownerToken) {
+            return
+        }
+
+        try {
+            await unhideMessage({ roomId, messageId, ownerToken })
+
+        } catch {
+            toast.error('Error trying to unhide a message!')
+        }
+    }
+
+    return (!hidden || isOwner) ? (
         <div className="flex justify-between items-center">
             <li
                 data-answered={answered}
-                className="relative ml-4 leading-relaxed text-zinc-100 data-[answered=true]:opacity-50 data-[answered=true]:pointer-events-none"
+                data-hidden={hidden}
+                className="relative ml-4 leading-relaxed text-zinc-100 data-[answered=true]:opacity-50 data-[hidden=true]:opacity-50 data-[answered=true]:pointer-events-none data-[hidden=true]:pointer-events-none"
             >
-                {text}
+                <span
+                    data-hidden={hidden}
+                    className="data-[hidden=true]:line-through"
+                >
+                    {text}
+                </span>
 
                 {<button
                     data-reacted={hasReacted}
@@ -124,7 +170,7 @@ export function Message({
             </li>
 
             {isOwner && (
-                <div>
+                <div className="space-x-3">
                     <button
                         data-answered={answered}
                         onClick={!answered ? handleMarkAsAnswered : handleMarkAsUnanswered}
@@ -135,10 +181,22 @@ export function Message({
                     >
                         {!answered ? <CheckCircle className="size-4" /> : <CircleSlash className="size-4" />}
                     </button>
-                    
+
+                    <button
+                        data-hidden={hidden}
+                        onClick={!hidden ? handleHideMessage : handleUnhideMessage}
+                        type="button"
+                        className="gap-2 text-sm font-medium pointer-events-auto text-zinc-400 hover:text-zinc-300"
+                        data-tooltip-content={`${!hidden ? "Hide" : "Unhide"} this message`}
+                        data-tooltip-id={`tooltip-change-hidden-state-${messageId}`}
+                    >
+                        {!hidden ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+                    </button>
+
                     <Tooltip id={`tooltip-change-answered-state-${messageId}`} place="top" />
+                    <Tooltip id={`tooltip-change-hidden-state-${messageId}`} place="top" />
                 </div>
             )}
         </div>
-    )
+    ) : null
 }

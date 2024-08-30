@@ -28,7 +28,7 @@ Welcome to the Ask Me Anything (AMA) application! This project is a real-time pl
 - **Room-Based Discussions:** Create rooms for different topics or sessions.
 - **Real-Time Updates**: Receive real-time updates on message creation, reactions, and status changes via WebSockets.
 - **Room Sharing**: Share the room URL to allow others to join and participate.
-- **Ownership & Management**: Each room is managed by an owner who can mark and unmark messages as answered.
+- **Ownership & Management**: Each room is managed by an owner who can manage answering and visibility of the questions.
 
 ## Tech Stack
 

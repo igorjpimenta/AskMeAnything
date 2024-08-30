@@ -14,6 +14,7 @@ type Message struct {
 	Message       string    `db:"message" json:"message"`
 	ReactionCount int64     `db:"reaction_count" json:"reaction_count"`
 	Answered      bool      `db:"answered" json:"answered"`
+	Hidden        bool      `db:"hidden" json:"hidden"`
 }
 
 type Room struct {

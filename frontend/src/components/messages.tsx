@@ -41,6 +41,7 @@ export function Messages({ isOwner }: MessagesProps) {
                         text={message.text}
                         amountOfReactions={message.amountOfReactions}
                         answered={message.answered}
+                        hidden={message.hidden}
                         isOwner={isOwner}
                     />
                 )

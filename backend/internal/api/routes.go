@@ -25,6 +25,8 @@ func routes(h *apiHandler) chi.Router {
 						r.Delete("/react", h.handleRemoveReactFromMessage)
 						r.Patch("/answer", h.handleMaskMessageAsAnswered)
 						r.Delete("/answer", h.handleMaskMessageAsUnanswered)
+						r.Patch("/hide", h.handleHideMessage)
+						r.Delete("/hide", h.handleUnhideMessage)
 					})
 				})
 			})

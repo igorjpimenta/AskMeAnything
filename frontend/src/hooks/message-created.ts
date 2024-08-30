@@ -21,6 +21,7 @@ export function handleMessageCreated(
                     text: value.message,
                     amountOfReactions: 0,
                     answered: false,
+                    hidden: false,
                 },
             ],
         }

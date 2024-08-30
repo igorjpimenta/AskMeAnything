@@ -13,7 +13,7 @@ import (
 
 const getMessage = `-- name: GetMessage :one
 select
-    "id", "room_id", "message", "reaction_count", "answered"
+    "id", "room_id", "message", "reaction_count", "answered", "hidden"
 from messages
 where
     id = $1
@@ -28,6 +28,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (Message, error)
 		&i.Message,
 		&i.ReactionCount,
 		&i.Answered,
+		&i.Hidden,
 	)
 	return i, err
 }
@@ -48,7 +49,7 @@ func (q *Queries) GetRoom(ctx context.Context, id uuid.UUID) (Room, error) {
 
 const getRoomMessages = `-- name: GetRoomMessages :many
 select
-    "id", "room_id", "message", "reaction_count", "answered"
+    "id", "room_id", "message", "reaction_count", "answered", "hidden"
 from messages
 where
     room_id = $1
@@ -69,6 +70,7 @@ func (q *Queries) GetRoomMessages(ctx context.Context, roomID uuid.UUID) ([]Mess
 			&i.Message,
 			&i.ReactionCount,
 			&i.Answered,
+			&i.Hidden,
 		); err != nil {
 			return nil, err
 		}
@@ -104,6 +106,19 @@ func (q *Queries) GetRooms(ctx context.Context) ([]Room, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const hideMessage = `-- name: HideMessage :exec
+update messages
+set
+    hidden = true
+where
+    id = $1
+`
+
+func (q *Queries) HideMessage(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, hideMessage, id)
+	return err
 }
 
 const insertMessage = `-- name: InsertMessage :one
@@ -200,4 +215,17 @@ func (q *Queries) RemoveReactionFromMessage(ctx context.Context, id uuid.UUID) (
 	var reaction_count int64
 	err := row.Scan(&reaction_count)
 	return reaction_count, err
+}
+
+const unhideMessage = `-- name: UnhideMessage :exec
+update messages
+set
+    hidden = false
+where
+    id = $1
+`
+
+func (q *Queries) UnhideMessage(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, unhideMessage, id)
+	return err
 }

@@ -10,6 +10,7 @@ export interface GetRoomMessagesResponse {
         text: string
         amountOfReactions: number
         answered: boolean
+        hidden: boolean
     }[]
 }
 
@@ -22,6 +23,7 @@ export async function getRoomMessages({ roomId }: GetRoomMessagesRequest): Promi
         message: string
         reaction_count: number
         answered: boolean
+        hidden: boolean
     }> = await response.json()
 
     return {
@@ -30,6 +32,7 @@ export async function getRoomMessages({ roomId }: GetRoomMessagesRequest): Promi
             text: item.message,
             amountOfReactions: item.reaction_count,
             answered: item.answered,
+            hidden: item.hidden,
         })),
     }
 }
