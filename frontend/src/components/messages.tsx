@@ -5,7 +5,11 @@ import { useParams } from "react-router-dom"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { useWebSocketMessages } from "../hooks/use-websocket-messages"
 
-export function Messages() {
+interface MessagesProps {
+    isOwner: boolean
+}
+
+export function Messages({ isOwner }: MessagesProps) {
     const { roomId } = useParams()
 
     if (!roomId) {
@@ -26,6 +30,7 @@ export function Messages() {
         return b.amountOfReactions - a.amountOfReactions
     })
 
+
     return (
         <ol className="list-decimal list-outside px-3 space-y-8">
             {sortedMessages.map(message => {
@@ -36,6 +41,7 @@ export function Messages() {
                         text={message.text}
                         amountOfReactions={message.amountOfReactions}
                         answered={message.answered}
+                        isOwner={isOwner}
                     />
                 )
             })}

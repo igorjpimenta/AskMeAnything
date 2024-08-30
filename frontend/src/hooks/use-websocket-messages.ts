@@ -5,12 +5,14 @@ import { handleMessageAnswered, MessageAnswered } from "./message-answered"
 
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
+import { handleMessageUnanswered, MessageUnanswered } from "./message-unanswered"
 
 type WebSocketMessage =
     | { kind: 'message_created'; value: MessageCreated }
     | { kind: 'message_reaction_increased'; value: MessageReacted }
     | { kind: 'message_reaction_decreased'; value: MessageReacted }
     | { kind: 'message_answered'; value: MessageAnswered }
+    | { kind: 'message_unanswered'; value: MessageUnanswered}
 
 export function useWebSocketMessages(roomId: string) {
     const queryClient = useQueryClient()
@@ -37,6 +39,10 @@ export function useWebSocketMessages(roomId: string) {
     
                 case 'message_answered':
                     handleMessageAnswered(queryClient, roomId, data.value)
+                    break
+    
+                case 'message_unanswered':
+                    handleMessageUnanswered(queryClient, roomId, data.value)
                     break
             }
         }

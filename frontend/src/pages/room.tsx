@@ -1,14 +1,32 @@
 import amaLogo from '../assets/ama-logo.svg'
 import { Messages } from '../components/messages'
 import { CreateMessageForm } from '../components/message-form'
+import { getRoom } from '../http/get-room'
 
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { Share2 } from "lucide-react"
 import { toast } from "sonner"
-import { Suspense } from "react"
+import { Suspense, useEffect, useState } from "react"
 
 export function Room() {
+    const navigate = useNavigate()
     const { roomId } = useParams()
+    const [isOwner, setIsOwner] = useState(false)
+
+    useEffect(() => {
+        async function fetchRoomDetails() {
+            if (!roomId) {
+                navigate(`/`)
+                return
+            }
+
+            const ownerToken = localStorage.getItem(`owner_token-${roomId}`)
+            const { ownership } = await getRoom({ roomId, ownerToken })
+            setIsOwner(ownership)
+        }
+
+        fetchRoomDetails()
+    }, [roomId, navigate])
 
     function handleShareRoom() {
         const url = window.location.href.toString()
@@ -47,7 +65,7 @@ export function Room() {
             <CreateMessageForm />
             
             <Suspense fallback={<p>Loading...</p>}>
-                <Messages />
+                <Messages isOwner={isOwner} />
             </Suspense>
         </div>
     )

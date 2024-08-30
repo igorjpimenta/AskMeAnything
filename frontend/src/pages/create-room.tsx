@@ -17,8 +17,9 @@ export function CreateRoom() {
         }
 
         try {
-            const { roomId } = await createRoom({ theme })
+            const { roomId, OwnerToken } = await createRoom({ theme })
 
+            localStorage.setItem(`owner_token-${roomId}`, OwnerToken)
             navigate(`/room/${roomId}`)
         } catch {
             toast.error('Error creating room!')

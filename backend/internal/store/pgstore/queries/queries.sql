@@ -1,18 +1,18 @@
 -- name: GetRoom :one
 select
-    "id", "theme"
+    "id", "theme", "owner_token"
 from rooms
 where id = $1;
 
 -- name: GetRooms :many
 select
-    "id", "theme"
+    "id", "theme", "owner_token"
 from rooms;
 
 -- name: InsertRoom :one
-insert into rooms("theme")
+insert into rooms("theme", "owner_token")
     values
-        ($1)
+        ($1, $2)
 returning "id";
 
 -- name: GetMessage :one
@@ -55,5 +55,12 @@ returning reaction_count;
 update messages
 set
     answered = true
+where
+    id = $1;
+
+-- name: MarkMessageUnanswered :exec
+update messages
+set
+    answered = false
 where
     id = $1;

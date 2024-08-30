@@ -12,15 +12,20 @@ func routes(h *apiHandler) chi.Router {
 			r.Post("/", h.handleCreateRoom)
 			r.Get("/", h.handleGetRooms)
 
-			r.Route("/{room_id}/messages", func(r chi.Router) {
-				r.Post("/", h.handleCreateRoomMessage)
-				r.Get("/", h.handleGetRoomMessages)
+			r.Route("/{room_id}", func(r chi.Router) {
+				r.Get("/", h.handleGetRoom)
 
-				r.Route("/{message_id}", func(r chi.Router) {
-					r.Get("/", h.handleGetRoomMessage)
-					r.Patch("/react", h.handleReactToMessage)
-					r.Delete("/react", h.handleRemoveReactFromMessage)
-					r.Patch("/answer", h.handleMaskMessageAsAnswered)
+				r.Route("/messages", func(r chi.Router) {
+					r.Post("/", h.handleCreateRoomMessage)
+					r.Get("/", h.handleGetRoomMessages)
+
+					r.Route("/{message_id}", func(r chi.Router) {
+						r.Get("/", h.handleGetRoomMessage)
+						r.Patch("/react", h.handleReactToMessage)
+						r.Delete("/react", h.handleRemoveReactFromMessage)
+						r.Patch("/answer", h.handleMaskMessageAsAnswered)
+						r.Delete("/answer", h.handleMaskMessageAsUnanswered)
+					})
 				})
 			})
 		})

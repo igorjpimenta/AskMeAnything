@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/igorjpimenta/AskMeAnything/internal/store/pgstore"
 )
 
@@ -14,7 +15,9 @@ func (h apiHandler) handleCreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomID, err := h.q.InsertRoom(r.Context(), body.Theme)
+	ownerToken := uuid.New()
+
+	roomID, err := h.q.InsertRoom(r.Context(), pgstore.InsertRoomParams{Theme: body.Theme, OwnerToken: ownerToken})
 	if err != nil {
 		h.handleError(w, "failed to insert room", err, http.StatusInternalServerError)
 		return
@@ -25,7 +28,7 @@ func (h apiHandler) handleCreateRoom(w http.ResponseWriter, r *http.Request) {
 		OwnerToken string `json:"owner_token"`
 	}
 
-	h.respondWithJSON(w, http.StatusOK, response{ID: roomID.String()})
+	h.respondWithJSON(w, http.StatusOK, response{ID: roomID.String(), OwnerToken: ownerToken.String()})
 }
 
 func (h apiHandler) handleGetRooms(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +43,24 @@ func (h apiHandler) handleGetRooms(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.respondWithJSON(w, http.StatusOK, rooms)
+}
+
+func (h apiHandler) handleGetRoom(w http.ResponseWriter, r *http.Request) {
+	room, roomID, ok := h.getRoom(w, r)
+	if !ok {
+		return
+	}
+
+	ownerToken := r.Header.Get("Owner-Token")
+	ownership := room.OwnerToken.String() == ownerToken
+
+	type response struct {
+		ID        string `json:"id"`
+		Theme     string `json:"theme"`
+		Ownership bool   `json:"ownership"`
+	}
+
+	h.respondWithJSON(w, http.StatusOK, response{ID: roomID.String(), Theme: room.Theme, Ownership: ownership})
 }
 
 func (h apiHandler) handleCreateRoomMessage(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +127,7 @@ func (h apiHandler) handleGetRoomMessage(w http.ResponseWriter, r *http.Request)
 }
 
 func (h apiHandler) handleReactToMessage(w http.ResponseWriter, r *http.Request) {
-	message, roomID, ok := h.validateMessageRoom(w, r)
+	message, room, ok := h.validateMessageRoom(w, r)
 	if !ok {
 		return
 	}
@@ -125,7 +146,7 @@ func (h apiHandler) handleReactToMessage(w http.ResponseWriter, r *http.Request)
 
 	go h.notifyClients(Message{
 		Kind:   MessageKindMessageReactionIncreased,
-		RoomID: roomID.String(),
+		RoomID: room.ID.String(),
 		Value: MessageMessageReactionIncreased{
 			ID:    message.ID.String(),
 			Count: reactionCount,
@@ -134,7 +155,7 @@ func (h apiHandler) handleReactToMessage(w http.ResponseWriter, r *http.Request)
 }
 
 func (h apiHandler) handleRemoveReactFromMessage(w http.ResponseWriter, r *http.Request) {
-	message, roomID, ok := h.validateMessageRoom(w, r)
+	message, room, ok := h.validateMessageRoom(w, r)
 	if !ok {
 		return
 	}
@@ -153,7 +174,7 @@ func (h apiHandler) handleRemoveReactFromMessage(w http.ResponseWriter, r *http.
 
 	go h.notifyClients(Message{
 		Kind:   MessageKindMessageReactionDecreased,
-		RoomID: roomID.String(),
+		RoomID: room.ID.String(),
 		Value: MessageMessageReactionDecreased{
 			ID:    message.ID.String(),
 			Count: reactionCount,
@@ -162,8 +183,14 @@ func (h apiHandler) handleRemoveReactFromMessage(w http.ResponseWriter, r *http.
 }
 
 func (h apiHandler) handleMaskMessageAsAnswered(w http.ResponseWriter, r *http.Request) {
-	message, roomID, ok := h.validateMessageRoom(w, r)
+	message, room, ok := h.validateMessageRoom(w, r)
 	if !ok {
+		return
+	}
+
+	ownerToken := r.Header.Get("Owner-Token")
+	if !(room.OwnerToken.String() == ownerToken) {
+		h.handleError(w, "unauthorized", nil, http.StatusUnauthorized)
 		return
 	}
 
@@ -180,8 +207,40 @@ func (h apiHandler) handleMaskMessageAsAnswered(w http.ResponseWriter, r *http.R
 
 	go h.notifyClients(Message{
 		Kind:   MessageKindMessageAnswered,
-		RoomID: roomID.String(),
+		RoomID: room.ID.String(),
 		Value: MessageMessageAnswered{
+			ID: message.ID.String(),
+		},
+	})
+}
+
+func (h apiHandler) handleMaskMessageAsUnanswered(w http.ResponseWriter, r *http.Request) {
+	message, room, ok := h.validateMessageRoom(w, r)
+	if !ok {
+		return
+	}
+
+	ownerToken := r.Header.Get("Owner-Token")
+	if !(room.OwnerToken.String() == ownerToken) {
+		h.handleError(w, "unauthorized", nil, http.StatusUnauthorized)
+		return
+	}
+
+	if !message.Answered {
+		h.handleError(w, "message already unanswered", nil, http.StatusBadRequest)
+		return
+	}
+
+	err := h.q.MarkMessageUnanswered(r.Context(), message.ID)
+	if err != nil {
+		h.handleError(w, "failed to mark message unanswered", err, http.StatusInternalServerError)
+		return
+	}
+
+	go h.notifyClients(Message{
+		Kind:   MessageKindMessageUnanswered,
+		RoomID: room.ID.String(),
+		Value: MessageMessageUnanswered{
 			ID: message.ID.String(),
 		},
 	})

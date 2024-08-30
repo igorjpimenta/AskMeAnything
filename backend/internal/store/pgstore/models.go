@@ -19,4 +19,5 @@ type Message struct {
 type Room struct {
 	ID         uuid.UUID `db:"id" json:"id"`
 	Theme      string    `db:"theme" json:"theme"`
+	OwnerToken uuid.UUID `db:"owner_token" json:"owner_token"`
 }

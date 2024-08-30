@@ -75,20 +75,20 @@ func (h apiHandler) getMessage(w http.ResponseWriter, r *http.Request) (message 
 	return getEntityByID(h, w, r, "message_id", h.q.GetMessage)
 }
 
-func (h apiHandler) validateMessageRoom(w http.ResponseWriter, r *http.Request) (message pgstore.Message, roomID uuid.UUID, ok bool) {
+func (h apiHandler) validateMessageRoom(w http.ResponseWriter, r *http.Request) (message pgstore.Message, room pgstore.Room, ok bool) {
 	message, _, ok = h.getMessage(w, r)
 	if !ok {
 		return
 	}
-	_, roomID, ok = h.getRoom(w, r)
+	room, roomID, ok := h.getRoom(w, r)
 	if !ok {
 		return
 	}
 
 	if message.RoomID != roomID {
 		h.handleError(w, "message does not belong to the specified room", nil, http.StatusNotFound)
-		return pgstore.Message{}, uuid.Nil, false
+		return pgstore.Message{}, pgstore.Room{}, false
 	}
 
-	return message, roomID, true
+	return message, room, true
 }

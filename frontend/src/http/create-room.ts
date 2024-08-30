@@ -12,7 +12,7 @@ export async function createRoom({ theme }: CreateRoomRequest) {
         })
     })
 
-    const data: { id: string } = await response.json()
+    const data: { id: string, owner_token: string } = await response.json()
 
-    return { roomId: data.id }
+    return { roomId: data.id, OwnerToken: data.owner_token }
 }

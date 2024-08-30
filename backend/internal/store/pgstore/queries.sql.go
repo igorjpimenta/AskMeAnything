@@ -34,7 +34,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (Message, error)
 
 const getRoom = `-- name: GetRoom :one
 select
-    "id", "theme"
+    "id", "theme", "owner_token"
 from rooms
 where id = $1
 `
@@ -42,7 +42,7 @@ where id = $1
 func (q *Queries) GetRoom(ctx context.Context, id uuid.UUID) (Room, error) {
 	row := q.db.QueryRow(ctx, getRoom, id)
 	var i Room
-	err := row.Scan(&i.ID, &i.Theme)
+	err := row.Scan(&i.ID, &i.Theme, &i.OwnerToken)
 	return i, err
 }
 
@@ -82,7 +82,7 @@ func (q *Queries) GetRoomMessages(ctx context.Context, roomID uuid.UUID) ([]Mess
 
 const getRooms = `-- name: GetRooms :many
 select
-    "id", "theme"
+    "id", "theme", "owner_token"
 from rooms
 `
 
@@ -95,7 +95,7 @@ func (q *Queries) GetRooms(ctx context.Context) ([]Room, error) {
 	var items []Room
 	for rows.Next() {
 		var i Room
-		if err := rows.Scan(&i.ID, &i.Theme); err != nil {
+		if err := rows.Scan(&i.ID, &i.Theme, &i.OwnerToken); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -114,8 +114,8 @@ returning "id"
 `
 
 type InsertMessageParams struct {
-	RoomID  uuid.UUID
-	Message string
+	RoomID  uuid.UUID `db:"room_id" json:"room_id"`
+	Message string    `db:"message" json:"message"`
 }
 
 func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (uuid.UUID, error) {
@@ -126,14 +126,19 @@ func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (u
 }
 
 const insertRoom = `-- name: InsertRoom :one
-insert into rooms("theme")
+insert into rooms("theme", "owner_token")
     values
-        ($1)
+        ($1, $2)
 returning "id"
 `
 
-func (q *Queries) InsertRoom(ctx context.Context, theme string) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, insertRoom, theme)
+type InsertRoomParams struct {
+	Theme      string    `db:"theme" json:"theme"`
+	OwnerToken uuid.UUID `db:"owner_token" json:"owner_token"`
+}
+
+func (q *Queries) InsertRoom(ctx context.Context, arg InsertRoomParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, insertRoom, arg.Theme, arg.OwnerToken)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -149,6 +154,19 @@ where
 
 func (q *Queries) MarkMessageAnswered(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, markMessageAnswered, id)
+	return err
+}
+
+const markMessageUnanswered = `-- name: MarkMessageUnanswered :exec
+update messages
+set
+    answered = false
+where
+    id = $1
+`
+
+func (q *Queries) MarkMessageUnanswered(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, markMessageUnanswered, id)
 	return err
 }
 
