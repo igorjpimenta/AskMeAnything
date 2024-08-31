@@ -21,7 +21,19 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-      <Toaster invert richColors />
+      <Toaster
+        toastOptions={{
+          unstyled: true,
+          classNames: {
+            toast: "font-medium w-[356px] min-h-[50px] bg-zinc-800 text-zinc-300 gap-1.5 text-white px-4 py-3 rounded-md shadow-lg flex items-center ml-auto",
+            title: "text-[13px]",
+            error: "text-red-400",
+            success: "text-green-400",
+            warning: "text-yellow-400",
+            info: "text-blue-400",
+          },
+        }}
+      />
     </QueryClientProvider>
   )
 }
