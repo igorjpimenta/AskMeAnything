@@ -85,6 +85,13 @@ export function Message({
         try {
             await markMessageAnswered({ roomId, messageId, ownerToken })
 
+            toast.success('Marked as answered.', {
+                action: {
+                  label: 'Undo',
+                  onClick: handleMarkAsUnanswered,
+                },
+            })
+
         } catch {
             toast.error('Error marking message as answered!')
         }
@@ -102,6 +109,8 @@ export function Message({
 
         try {
             await markMessageUnanswered({ roomId, messageId, ownerToken })
+
+            toast.success('Marked as unanswered.')
 
         } catch {
             toast.error('Error marking message as unanswered!')
@@ -121,6 +130,13 @@ export function Message({
         try {
             await hideMessage({ roomId, messageId, ownerToken })
 
+            toast.success('Message hidden.', {
+                action: {
+                  label: 'Undo',
+                  onClick: handleUnhideMessage,
+                },
+            })
+
         } catch {
             toast.error('Error trying to hide a message!')
         }
@@ -138,6 +154,8 @@ export function Message({
 
         try {
             await unhideMessage({ roomId, messageId, ownerToken })
+
+            toast.success('Message restored.')
 
         } catch {
             toast.error('Error trying to unhide a message!')
@@ -182,6 +200,8 @@ export function Message({
                         {!answered ? <CheckCircle className="size-4" /> : <CircleSlash className="size-4" />}
                     </button>
 
+                    <Tooltip id={`tooltip-change-answered-state-${messageId}`} place="top" />
+
                     <button
                         data-hidden={hidden}
                         data-tooltip-id={`tooltip-change-hidden-state-${messageId}`}
@@ -192,8 +212,7 @@ export function Message({
                     >
                         {!hidden ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                     </button>
-
-                    <Tooltip id={`tooltip-change-answered-state-${messageId}`} place="top" />
+                    
                     <Tooltip id={`tooltip-change-hidden-state-${messageId}`} place="top" />
                 </div>
             )}

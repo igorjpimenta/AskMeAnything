@@ -31,6 +31,7 @@ export function App() {
             success: "text-green-400",
             warning: "text-yellow-400",
             info: "text-blue-400",
+            actionButton: "bg-orange-400 hover:bg-orange-500 font-bold text-[12px] text-orange-950 px-2 py-1 rounded-md",
           },
         }}
       />
