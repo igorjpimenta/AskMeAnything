@@ -74,9 +74,9 @@ Before you begin, ensure you have the following installed:
     go mod download
     ```
 
-4. **Run PostgreSQL in Docker**:
+4. **Build and run PostgreSQL in Docker**:
     ```bash
-    docker-compose up -d
+    docker-compose --env-file ../.env up -d
     ```
 
 5. **Run database migrations:**:
