@@ -7,9 +7,10 @@ import { useWebSocketMessages } from "../hooks/use-websocket-messages"
 
 interface MessagesProps {
     isOwner: boolean
+    showHiddenMessages: boolean
 }
 
-export function Messages({ isOwner }: MessagesProps) {
+export function Messages({ isOwner, showHiddenMessages }: MessagesProps) {
     const { roomId } = useParams()
 
     if (!roomId) {
@@ -23,12 +24,14 @@ export function Messages({ isOwner }: MessagesProps) {
 
     useWebSocketMessages(roomId)
 
-    const sortedMessages = data.messages.sort((a, b) => {
-        if (b.answered !== a.answered) {
-            return a.answered ? 1 : -1
-        }
-        return b.amountOfReactions - a.amountOfReactions
-    })
+    const sortedMessages = data.messages
+        .filter(message => showHiddenMessages || !message.hidden)
+        .sort((a, b) => {
+            if (b.answered !== a.answered) {
+                return a.answered ? 1 : -1
+            }
+            return b.amountOfReactions - a.amountOfReactions
+        })
 
 
     return (

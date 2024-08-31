@@ -173,22 +173,22 @@ export function Message({
                 <div className="space-x-3">
                     <button
                         data-answered={answered}
+                        data-tooltip-id={`tooltip-change-answered-state-${messageId}`}
+                        data-tooltip-content={`Mark as ${answered ? "Unanswered" : "Answered"}`}
                         onClick={!answered ? handleMarkAsAnswered : handleMarkAsUnanswered}
                         type="button"
                         className="gap-2 text-sm font-medium pointer-events-auto opacity-100 data-[answered=false]:text-green-500 data-[answered=false]:hover:text-green-600 data-[answered=true]:text-yellow-500 data-[answered=true]:hover:text-yellow-600"
-                        data-tooltip-content={`Mark as ${answered ? "Unanswered" : "Answered"}`}
-                        data-tooltip-id={`tooltip-change-answered-state-${messageId}`}
                     >
                         {!answered ? <CheckCircle className="size-4" /> : <CircleSlash className="size-4" />}
                     </button>
 
                     <button
                         data-hidden={hidden}
+                        data-tooltip-id={`tooltip-change-hidden-state-${messageId}`}
+                        data-tooltip-content={`${!hidden ? "Hide" : "Unhide"} this message`}
                         onClick={!hidden ? handleHideMessage : handleUnhideMessage}
                         type="button"
                         className="gap-2 text-sm font-medium pointer-events-auto text-zinc-400 hover:text-zinc-300"
-                        data-tooltip-content={`${!hidden ? "Hide" : "Unhide"} this message`}
-                        data-tooltip-id={`tooltip-change-hidden-state-${messageId}`}
                     >
                         {!hidden ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                     </button>
