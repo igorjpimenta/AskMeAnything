@@ -25,7 +25,7 @@ export function App() {
         toastOptions={{
           unstyled: true,
           classNames: {
-            toast: "font-medium w-[356px] min-h-[50px] bg-zinc-800 text-zinc-300 gap-1.5 text-white px-4 py-3 rounded-md shadow-lg flex items-center ml-auto",
+            toast: "font-medium w-[356px] min-h-[50px] bg-zinc-800 gap-1.5 px-4 py-3 rounded-md shadow-lg flex items-center ml-auto",
             title: "text-[13px]",
             error: "text-red-400",
             success: "text-green-400",
